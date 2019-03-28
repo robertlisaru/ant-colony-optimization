@@ -20,8 +20,8 @@
     </dependencies>
 
     <properties>
-        <maven.compiler.source>18.3</maven.compiler.source>
-        <maven.compiler.target>18.3</maven.compiler.target>
+        <maven.compiler.source>1.10</maven.compiler.source>
+        <maven.compiler.target>1.10</maven.compiler.target>
     </properties>
 
 </project>

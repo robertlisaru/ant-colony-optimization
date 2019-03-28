@@ -8,15 +8,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class AntTest {
-    int numCities = 3;
+    final int numCities = 3;
 
-    int[][] distances = {
+    final int[][] distances = {
             {0, 10, 20},
             {10, 0, 30},
             {20, 30, 0},
     };
 
-    double[][] pheromones = {
+    final double[][] pheromones = {
             {0.1, 0.1, 0.1},
             {0.1, 0.1, 0.1},
             {0.1, 0.1, 0.1}
@@ -32,20 +32,23 @@ public class AntTest {
 
     @Test
     public void antTest() {
-        Ant ant = new Ant(pheromones, distances, numCities);
+        Ant ant = new Ant(pheromones, distances, numCities, 1, 1);
         int[] path = ant.getPath();
         assertTrue(0 <= path[0] && path[0] < numCities);
 
-        ant.runTour();
-
-        path = ant.getPath();
-        assertEquals(numCities, path.length);
-        int pathDistance = ant.getPathDistance();
-        int expectedPathDistance = 0;
-        for (int i = 0; i < path.length - 1; i++) {
-            expectedPathDistance += distances[path[i]][path[i + 1]];
+        for (int testIteration = 0; testIteration < 3; testIteration++) {
+            ant.runTour();
+            path = ant.getPath();
+            assertEquals(numCities, path.length);
+            int pathDistance = ant.getPathDistance();
+            int expectedPathDistance = 0;
+            for (int i = 0; i < path.length - 1; i++) {
+                expectedPathDistance += distances[path[i]][path[i + 1]];
+                assertTrue(0 <= path[i] && path[i] < numCities);
+            }
+            assertEquals(expectedPathDistance, pathDistance);
+            ant.reset();
         }
-        assertEquals(expectedPathDistance, pathDistance);
 
     }
 }

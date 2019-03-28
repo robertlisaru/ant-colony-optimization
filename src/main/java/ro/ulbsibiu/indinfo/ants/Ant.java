@@ -2,27 +2,33 @@ package ro.ulbsibiu.indinfo.ants;
 
 import java.util.Random;
 
+import static java.lang.Math.pow;
+
 public class Ant {
-    private double[][] pheromones;
-    private int[][] distances;
-    private int numCities;
-    private int[] path;
+    private static final Random random = new Random(System.currentTimeMillis());
+    private final double[][] pheromoneMap;
+    private final int[][] distances;
+    private final int numCities;
+    private final int[] path;
+    private final double[] cityScores; //re-written at each city
+    private final double pheromoneInfluence;
+    private final double visibilityInfluence;
     private int pathCityCount = 0;
     private int pathDistance = 0;
     private boolean[] isVisited;
-    private double[] cityScores; //re-written at each city
-    private Random random;
 
-    public Ant(double[][] pheromones, int[][] distances, int numCities) {
-        this.pheromones = pheromones;
+    public Ant(final double[][] pheromoneMap, final int[][] distances, final int numCities
+            , double pheromoneInfluence, double visibilityInfluence) {
+        this.pheromoneMap = pheromoneMap;
         this.distances = distances;
         this.numCities = numCities;
+        this.pheromoneInfluence = pheromoneInfluence;
+        this.visibilityInfluence = visibilityInfluence;
 
         path = new int[numCities];
         isVisited = new boolean[numCities];
         cityScores = new double[numCities];
 
-        random = new Random(System.currentTimeMillis());
         int startingCity = random.nextInt(numCities);
         path[pathCityCount++] = startingCity;
         isVisited[startingCity] = true;
@@ -38,7 +44,8 @@ public class Ant {
                 cityScores[city] = 0.0;
             } else {
                 double visibility = 1.0 / distances[currentCity][city];
-                cityScores[city] = pheromones[currentCity][city] * visibility;
+                cityScores[city] = pow(pheromoneMap[currentCity][city], pheromoneInfluence)
+                        * pow(visibility, visibilityInfluence);
                 totalScore += cityScores[city];
             }
         }
@@ -81,6 +88,7 @@ public class Ant {
 
     public void reset() {
         pathCityCount = 0;
+        pathDistance = 0;
         path[pathCityCount++] = random.nextInt(numCities);
         isVisited = new boolean[numCities];
         isVisited[path[0]] = true;

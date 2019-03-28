@@ -10,22 +10,19 @@ public class Util {
         return lowerLimit + rand.nextInt(higherLimitExclusive - lowerLimit);
     }
 
-    public static void printMatrix(int[][] matrix, int numLines, int numColumns) {
+    public static void printMatrix(double[][] matrix, int numLines, int numColumns) {
         for (int i = 0; i < numLines; i++) {
             for (int j = 0; j < numColumns; j++) {
-                System.out.print(matrix[i][j] + " ");
+                System.out.print(String.format("%.2f", matrix[i][j]) + " ");
             }
             System.out.println();
         }
         System.out.println();
     }
 
-    public void printArray(int[] array, int length) {
+    public static void printArray(int[] array, int length) {
         for (int i = 0; i < length; i++) {
             System.out.print(array[i] + " ");
         }
-        System.out.println();
     }
-
-
 }
