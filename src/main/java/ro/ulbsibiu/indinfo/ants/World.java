@@ -1,7 +1,5 @@
 package ro.ulbsibiu.indinfo.ants;
 
-import java.util.LinkedList;
-
 public class World {
 
     private final int numCities;
@@ -27,30 +25,4 @@ public class World {
     }
 
 
-    private class Ant {
-
-        private final LinkedList<Integer> visited = new LinkedList<>();
-        private final LinkedList<Integer> unvisited = new LinkedList<>();
-
-        public Ant() {
-            for (int i = 0; i < numCities; i++) {
-                unvisited.add(i);
-            }
-            int startingCity = Util.getRandomInt(0, numCities);
-            unvisited.remove(new Integer(startingCity));
-            visited.add(startingCity);
-        }
-
-        public int getCurrentCity() {
-            return visited.getLast();
-        }
-
-        public int computeDistance() {
-            int distance = 0;
-            for (int i = 0; i < visited.size() - 1; i++) {
-                distance += distances[visited.get(i)][visited.get(i + 1)];
-            }
-            return distance;
-        }
-    }
 }
