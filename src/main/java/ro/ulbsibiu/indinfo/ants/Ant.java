@@ -11,19 +11,19 @@ public class Ant {
     private final int numCities;
     private final int[] path;
     private final double[] cityScores; //re-written at each city
-    private final double pheromoneInfluence;
-    private final double visibilityInfluence;
+    private final double pheromoneExponent;
+    private final double visibilityExponent;
     private int pathCityCount = 0;
     private int pathDistance = 0;
     private boolean[] isVisited;
 
     public Ant(final double[][] pheromoneMap, final int[][] distances, final int numCities
-            , double pheromoneInfluence, double visibilityInfluence) {
+            , double pheromoneExponent, double visibilityExponent) {
         this.pheromoneMap = pheromoneMap;
         this.distances = distances;
         this.numCities = numCities;
-        this.pheromoneInfluence = pheromoneInfluence;
-        this.visibilityInfluence = visibilityInfluence;
+        this.pheromoneExponent = pheromoneExponent;
+        this.visibilityExponent = visibilityExponent;
 
         path = new int[numCities];
         isVisited = new boolean[numCities];
@@ -44,8 +44,8 @@ public class Ant {
                 cityScores[city] = 0.0;
             } else {
                 double visibility = 1.0 / distances[currentCity][city];
-                cityScores[city] = pow(pheromoneMap[currentCity][city], pheromoneInfluence)
-                        * pow(visibility, visibilityInfluence);
+                cityScores[city] = pow(pheromoneMap[currentCity][city], pheromoneExponent)
+                        * pow(visibility, visibilityExponent);
                 totalScore += cityScores[city];
             }
         }
@@ -61,7 +61,7 @@ public class Ant {
             }
         }
 
-        return -1;
+        throw new RuntimeException("The ant didn't choose any city. Maybe the probabilities don't add up to 1.0?");
     }
 
     private void walkToCity(int city) {

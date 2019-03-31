@@ -10,27 +10,27 @@ public class World {
     private final int[][] distances;
     private final Ant[] ants;
     private final double[][] pheromoneMap;
-    private final double evaporationRate;
+    private final double evaporationProcent;
     private final double pheromoneIncrease;
-    private final double pheromoneInfluence;
-    private final double visibilityInfluence;
+    private final double pheromoneExponent;
+    private final double visibilityExponent;
     private final double bestPathPheromoneIncreaseFactor;
 
-    public World(final int numCities, final int numAnts, final double initialPheromoneIntensity, int[][] distances, double evaporationRate, double pheromoneIncrease, double pheromoneInfluence, double visibilityInfluence, double bestPathPheromoneIncreaseFactor) {
+    public World(final int numCities, final int numAnts, final double initialPheromoneIntensity, int[][] distances, double evaporationProcent, double pheromoneIncrease, double pheromoneExponent, double visibilityExponent, double bestPathPheromoneIncreaseFactor) {
         this.numCities = numCities;
         this.numAnts = numAnts;
         this.initialPheromoneIntensity = initialPheromoneIntensity;
         this.distances = distances;
-        this.evaporationRate = evaporationRate;
+        this.evaporationProcent = evaporationProcent;
         this.pheromoneIncrease = pheromoneIncrease;
-        this.pheromoneInfluence = pheromoneInfluence;
-        this.visibilityInfluence = visibilityInfluence;
+        this.pheromoneExponent = pheromoneExponent;
+        this.visibilityExponent = visibilityExponent;
         this.bestPathPheromoneIncreaseFactor = bestPathPheromoneIncreaseFactor;
 
         pheromoneMap = new double[numCities][numCities];
         ants = new Ant[numAnts];
         for (int i = 0; i < numAnts; i++) {
-            ants[i] = new Ant(pheromoneMap, this.distances, numCities, pheromoneInfluence, visibilityInfluence);
+            ants[i] = new Ant(pheromoneMap, this.distances, numCities, pheromoneExponent, visibilityExponent);
         }
 
         for (int i = 0; i < numCities; i++) {
@@ -54,11 +54,10 @@ public class World {
         }
 
         //region Update pheromoneMap
-
         for (int i = 0; i < numCities; i++) {
             for (int j = 0; j < numCities; j++) {
-                pheromoneMap[i][j] *= (1.0 - evaporationRate);
-                pheromoneMap[j][i] *= (1.0 - evaporationRate);
+                pheromoneMap[i][j] *= (1.0 - evaporationProcent);
+                pheromoneMap[j][i] *= (1.0 - evaporationProcent);
             }
         }
         for (int k = 0; k < numAnts; k++) {
@@ -72,8 +71,10 @@ public class World {
             }
         }
         for (int i = 0; i < bestPath.length - 1; i++) {
-            pheromoneMap[bestPath[i]][bestPath[i + 1]] += (pheromoneIncrease / minDistance) * bestPathPheromoneIncreaseFactor;
-            pheromoneMap[bestPath[i + 1]][bestPath[i]] += (pheromoneIncrease / minDistance) * bestPathPheromoneIncreaseFactor;
+            pheromoneMap[bestPath[i]][bestPath[i + 1]] += (pheromoneIncrease / minDistance)
+                    * bestPathPheromoneIncreaseFactor;
+            pheromoneMap[bestPath[i + 1]][bestPath[i]] += (pheromoneIncrease / minDistance)
+                    * bestPathPheromoneIncreaseFactor;
         }
         //endregion
 
