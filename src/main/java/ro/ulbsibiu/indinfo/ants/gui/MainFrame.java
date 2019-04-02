@@ -3,6 +3,15 @@ package ro.ulbsibiu.indinfo.ants.gui;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import ro.ulbsibiu.indinfo.ants.Util;
 import ro.ulbsibiu.indinfo.ants.World;
 
@@ -22,11 +31,12 @@ import java.util.ArrayList;
 
 public class MainFrame extends JFrame {
     private ControlsPanel controlsPanel = new ControlsPanel();
+    private SouthPanel southPanel = new SouthPanel();
     private Canvas canvas = new Canvas();
     private ArrayList<Point> clickedPoints = new ArrayList<>();
     private World world;
     private int[][] distances;
-    private int[] bestPath;
+    private int[] minPath;
     private int numIterations = 0;
     private double[][] pheromoneMap;
 
@@ -54,16 +64,16 @@ public class MainFrame extends JFrame {
                 System.exit(0);
             }
         });
-        JMenuItem viewOptions = new JCheckBoxMenuItem("Options Panel");
-        viewOptions.setMnemonic(KeyEvent.VK_R);
-        viewOptions.setSelected(true);
-        viewOptions.addItemListener(new ItemListener() {
+        JMenuItem viewChart = new JCheckBoxMenuItem("Chart");
+        viewChart.setMnemonic(KeyEvent.VK_R);
+        viewChart.setSelected(true);
+        viewChart.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    controlsPanel.setVisible(true);
+                    southPanel.setVisible(true);
                 } else {
-                    controlsPanel.setVisible(false);
+                    southPanel.setVisible(false);
                 }
             }
         });
@@ -82,7 +92,7 @@ public class MainFrame extends JFrame {
         JMenu helpMenu = new JMenu("Help");
         helpMenu.add(about);
         fileMenu.add(exit);
-        viewMenu.add(viewOptions);
+        viewMenu.add(viewChart);
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(fileMenu);
         menuBar.add(viewMenu);
@@ -93,6 +103,7 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
         add(canvas, BorderLayout.CENTER);
         add(controlsPanel, BorderLayout.EAST);
+        add(southPanel, BorderLayout.SOUTH);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
@@ -111,15 +122,44 @@ public class MainFrame extends JFrame {
 
     private void reset() {
         canvas.clickingEnabled = true;
+        controlsPanel.numCities.setEnabled(true);
+        controlsPanel.numAnts.setEnabled(true);
+        controlsPanel.evaporation.setEnabled(true);
+        controlsPanel.pheromoneIncrease.setEnabled(true);
+        controlsPanel.pheromoneExponent.setEnabled(true);
+        controlsPanel.visibilityExponent.setEnabled(true);
+        controlsPanel.minPathMultiplier.setEnabled(true);
+
         clickedPoints = new ArrayList<>();
         world = null;
         pheromoneMap = null;
-        bestPath = null;
+        minPath = null;
         distances = null;
-        controlsPanel.bestDistance.setText("0");
+        controlsPanel.minDistance.setText("0");
         numIterations = 0;
         controlsPanel.iterations.setText("0");
         controlsPanel.numCities.setText("0");
+
+        southPanel.series.clear();
+        canvas.repaint();
+    }
+
+    private void startAgain() {
+        world = null;
+        pheromoneMap = null;
+        minPath = null;
+        controlsPanel.minDistance.setText("0");
+        numIterations = 0;
+        controlsPanel.iterations.setText("0");
+
+        controlsPanel.numAnts.setEnabled(true);
+        controlsPanel.evaporation.setEnabled(true);
+        controlsPanel.pheromoneIncrease.setEnabled(true);
+        controlsPanel.pheromoneExponent.setEnabled(true);
+        controlsPanel.visibilityExponent.setEnabled(true);
+        controlsPanel.minPathMultiplier.setEnabled(true);
+
+        southPanel.series.clear();
         canvas.repaint();
     }
 
@@ -190,62 +230,91 @@ public class MainFrame extends JFrame {
                     }
                 }
             }
-            if (bestPath != null && controlsPanel.showBestPath.isSelected()) {
+            if (minPath != null && controlsPanel.showMinPath.isSelected()) {
                 graphics2D.setPaint(new Color(0, 255, 0, 255));
                 for (int i = 0; i < clickedPoints.size() - 1; i++) {
-                    Point a = clickedPoints.get(bestPath[i]);
-                    Point b = clickedPoints.get(bestPath[i + 1]);
+                    Point a = clickedPoints.get(minPath[i]);
+                    Point b = clickedPoints.get(minPath[i + 1]);
                     graphics2D.drawLine(a.x, a.y, b.x, b.y);
                 }
 
                 graphics2D.setPaint(new Color(0, 0, 0, 255));
-                int x = clickedPoints.get(bestPath[0]).x - circleRadius / 2;
-                int y = clickedPoints.get(bestPath[0]).y - circleRadius / 2;
+                int x = clickedPoints.get(minPath[0]).x - circleRadius / 2;
+                int y = clickedPoints.get(minPath[0]).y - circleRadius / 2;
                 graphics2D.fillOval(x, y, circleRadius, circleRadius);
 
-                x = clickedPoints.get(bestPath[clickedPoints.size() - 1]).x - circleRadius / 2;
-                y = clickedPoints.get(bestPath[clickedPoints.size() - 1]).y - circleRadius / 2;
+                x = clickedPoints.get(minPath[clickedPoints.size() - 1]).x - circleRadius / 2;
+                y = clickedPoints.get(minPath[clickedPoints.size() - 1]).y - circleRadius / 2;
                 graphics2D.fillOval(x, y, circleRadius, circleRadius);
+
+
             }
+            graphics2D.setPaint(new Color(255, 128, 0, 255));
+            graphics2D.drawString("Pheromone map (click to draw cities)", 15, 15);
         }
     }
 
     private class ControlsPanel extends JPanel {
         private JButton iterate = new JButton("Iterate");
         private JButton reset = new JButton("Reset");
+        private JButton startAgain = new JButton("Start again");
         private JButton randomize = new JButton("Randomize");
-        private JTextField numCities = new JTextField("0", 5);
-        private JTextField numAnts = new JTextField("25", 5);
+        private JTextField numCities = new JTextField("50", 5);
+        private JTextField numAnts = new JTextField("50", 5);
         private JTextField evaporation = new JTextField("0.5", 5);
         private JTextField pheromoneIncrease = new JTextField("100", 5);
         private JTextField pheromoneExponent = new JTextField("1.0", 5);
         private JTextField visibilityExponent = new JTextField("1.0", 5);
-        private JTextField bestPathMultiplier = new JTextField("5", 5);
-        private JTextField bestDistance = new JTextField("0", 5);
+        private JTextField minPathMultiplier = new JTextField("5", 5);
+        private JTextField minDistance = new JTextField("0", 5);
         private JTextField iterations = new JTextField("0", 5);
-        private JCheckBox showBestPath = new JCheckBox("Show best path", true);
-        private JTextField iterationsAtOnce = new JTextField("1", 5);
+        private JCheckBox showMinPath = new JCheckBox("Show min path", true);
+        private JCheckBox showChart = new JCheckBox("Show chart", true);
+        private JTextField iterationsAtOnce = new JTextField("50", 5);
 
         ControlsPanel() {
             setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
             setLayout(new BorderLayout());
 
-            bestDistance.setEnabled(false);
+            minDistance.setEnabled(false);
             iterations.setEnabled(false);
 
-            showBestPath.addItemListener(new ItemListener() {
+            showMinPath.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     canvas.repaint();
                 }
             });
+            showChart.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        southPanel.setVisible(true);
+                    } else {
+                        southPanel.setVisible(false);
+                    }
+                }
+            });
 
+            startAgain.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MainFrame.this.startAgain();
+                }
+            });
             iterate.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (clickedPoints.size() > 0) {
-                        canvas.clickingEnabled = false;
                         if (world == null) {
+                            canvas.clickingEnabled = false;
+                            numCities.setEnabled(false);
+                            numAnts.setEnabled(false);
+                            evaporation.setEnabled(false);
+                            pheromoneIncrease.setEnabled(false);
+                            pheromoneExponent.setEnabled(false);
+                            visibilityExponent.setEnabled(false);
+                            minPathMultiplier.setEnabled(false);
                             distances = new int[clickedPoints.size()][clickedPoints.size()];
                             for (int i = 1; i < clickedPoints.size(); i++) {
                                 for (int j = 0; j < i; j++) {
@@ -261,18 +330,20 @@ public class MainFrame extends JFrame {
                                     Double.parseDouble(pheromoneIncrease.getText()),
                                     Double.parseDouble(pheromoneExponent.getText()),
                                     Double.parseDouble(visibilityExponent.getText()),
-                                    Double.parseDouble(bestPathMultiplier.getText()));
+                                    Double.parseDouble(minPathMultiplier.getText()));
                             pheromoneMap = world.getPheromoneMap();
                         }
                         for (int i = 0; i < Integer.parseInt(iterationsAtOnce.getText()) - 1; i++) {
-                            world.iterate();
+                            int minDistance = world.iterate();
+                            southPanel.series.add(numIterations, minDistance);
                             world.resetAnts();
                             ++numIterations;
                         }
-                        int bestDistance = world.iterate();
-                        bestPath = world.getCopyOfBestPath();
+                        int minDistance = world.iterate();
+                        southPanel.series.add(numIterations, minDistance);
+                        minPath = world.getCopyOfMinPath();
                         canvas.repaint();
-                        ControlsPanel.this.bestDistance.setText(String.valueOf(bestDistance));
+                        ControlsPanel.this.minDistance.setText(String.valueOf(minDistance));
                         ControlsPanel.this.iterations.setText(String.valueOf(++numIterations));
                         world.resetAnts();
                     }
@@ -330,8 +401,8 @@ public class MainFrame extends JFrame {
             builder.addLabel("Visibility exponent", cc.xy(5, 7));
             builder.add(visibilityExponent, cc.xy(7, 7));
 
-            builder.addLabel("Best path multiplier", cc.xy(1, 9));
-            builder.add(bestPathMultiplier, cc.xy(3, 9));
+            builder.addLabel("Min path multiplier", cc.xy(1, 9));
+            builder.add(minPathMultiplier, cc.xy(3, 9));
             builder.addLabel("Iterations at once", cc.xy(5, 9));
             builder.add(iterationsAtOnce, cc.xy(7, 9));
 
@@ -339,17 +410,72 @@ public class MainFrame extends JFrame {
             builder.add(iterate, cc.xy(1, 13));
             builder.add(randomize, cc.xy(5, 13));
             builder.add(reset, cc.xy(1, 15));
-            builder.add(new JButton("Clear"), cc.xy(5, 15));
-            builder.add(showBestPath, cc.xy(1, 17));
-            builder.add(new JCheckBox("Show chart", false), cc.xy(5, 17));
+            builder.add(startAgain, cc.xy(5, 15));
+            builder.add(showMinPath, cc.xy(1, 17));
+            builder.add(showChart, cc.xy(5, 17));
 
             builder.addSeparator("Info", cc.xyw(1, 19, 7));
             builder.addLabel("Iterations", cc.xy(1, 21));
             builder.add(iterations, cc.xy(3, 21));
-            builder.addLabel("Best distance", cc.xy(5, 21));
-            builder.add(bestDistance, cc.xy(7, 21));
+            builder.addLabel("Min distance", cc.xy(5, 21));
+            builder.add(minDistance, cc.xy(7, 21));
             add(builder.getPanel(), BorderLayout.CENTER);
             //endregion
+        }
+    }
+
+    private class SouthPanel extends JPanel {
+        private XYSeries series;
+        private XYDataset dataset;
+        private JFreeChart chart;
+
+        SouthPanel() {
+            setLayout(new BorderLayout());
+            setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+            setBackground(Color.white);
+            setPreferredSize(new Dimension(MainFrame.this.getWidth(), 200));
+            dataset = createDataset();
+            chart = createChart(dataset);
+            add(new ChartPanel(chart), BorderLayout.CENTER);
+        }
+
+        private XYDataset createDataset() {
+            series = new XYSeries("series");
+
+            XYSeriesCollection dataset = new XYSeriesCollection();
+            dataset.addSeries(series);
+
+            return dataset;
+        }
+
+        private JFreeChart createChart(XYDataset dataset) {
+            JFreeChart chart = ChartFactory.createXYLineChart(
+                    "Minimum distance at each iteration",
+                    "Iteration",
+                    "Min distance",
+                    dataset,
+                    PlotOrientation.VERTICAL,
+                    false,
+                    false,
+                    false
+            );
+
+            XYPlot plot = chart.getXYPlot();
+
+            XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+            renderer.setSeriesPaint(0, Color.GREEN);
+            renderer.setSeriesStroke(0, new BasicStroke(2.0f));
+
+            plot.setRenderer(renderer);
+            plot.setBackgroundPaint(Color.white);
+
+            plot.setRangeGridlinesVisible(true);
+            plot.setRangeGridlinePaint(Color.BLACK);
+
+            plot.setDomainGridlinesVisible(true);
+            plot.setDomainGridlinePaint(Color.BLACK);
+
+            return chart;
         }
     }
 }

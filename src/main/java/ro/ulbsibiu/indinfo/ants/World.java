@@ -11,17 +11,17 @@ public class World {
     private final double[][] pheromoneMap;
     private final double evaporationProcent;
     private final double pheromoneIncrease;
-    private final double bestPathPheromoneIncreaseFactor;
-    private int[] bestPath = null;
+    private final double minPathPheromoneIncreaseFactor;
+    private int[] minPath = null;
 
     public World(final int numCities, final int numAnts, int[][] distances,
                  double evaporationPercent, double pheromoneIncrease, double pheromoneExponent, double visibilityExponent,
-                 double bestPathPheromoneIncreaseFactor) {
+                 double minPathPheromoneIncreaseFactor) {
         this.numCities = numCities;
         this.numAnts = numAnts;
         this.evaporationProcent = evaporationPercent;
         this.pheromoneIncrease = pheromoneIncrease;
-        this.bestPathPheromoneIncreaseFactor = bestPathPheromoneIncreaseFactor;
+        this.minPathPheromoneIncreaseFactor = minPathPheromoneIncreaseFactor;
 
         pheromoneMap = new double[numCities][numCities];
         for (int i = 0; i < numCities; i++) {
@@ -44,7 +44,7 @@ public class World {
             int pathDistance = ants[k].getPathDistance();
             if (pathDistance < minDistance) {
                 minDistance = pathDistance;
-                bestPath = ants[k].getPath();
+                minPath = ants[k].getPath();
             }
         }
 
@@ -62,19 +62,19 @@ public class World {
                 pheromoneMap[path[i + 1]][path[i]] += (pheromoneIncrease / ants[k].getPathDistance());
             }
         }
-        for (int i = 0; i < bestPath.length - 1; i++) {
-            pheromoneMap[bestPath[i]][bestPath[i + 1]] += (pheromoneIncrease / minDistance)
-                    * bestPathPheromoneIncreaseFactor;
-            pheromoneMap[bestPath[i + 1]][bestPath[i]] += (pheromoneIncrease / minDistance)
-                    * bestPathPheromoneIncreaseFactor;
+        for (int i = 0; i < minPath.length - 1; i++) {
+            pheromoneMap[minPath[i]][minPath[i + 1]] += (pheromoneIncrease / minDistance)
+                    * minPathPheromoneIncreaseFactor;
+            pheromoneMap[minPath[i + 1]][minPath[i]] += (pheromoneIncrease / minDistance)
+                    * minPathPheromoneIncreaseFactor;
         }
         //endregion
 
         return minDistance;
     }
 
-    public int[] getCopyOfBestPath() {
-        return Arrays.copyOf(bestPath, numCities);
+    public int[] getCopyOfMinPath() {
+        return Arrays.copyOf(minPath, numCities);
     }
 
     public void resetAnts() {
