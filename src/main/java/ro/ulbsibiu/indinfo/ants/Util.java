@@ -1,5 +1,6 @@
 package ro.ulbsibiu.indinfo.ants;
 
+import java.awt.*;
 import java.util.Random;
 
 public class Util {
@@ -24,5 +25,21 @@ public class Util {
         for (int i = 0; i < length; i++) {
             System.out.print(array[i] + " ");
         }
+    }
+
+    public static int distanceInt(Point a, Point b) {
+        return (Long.valueOf(Math.round(Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y))))).intValue();
+    }
+
+    public static double maxPheromone(double[][] pheromoneMap, int numCities) {
+        double max = Double.MIN_VALUE;
+        for (int i = 1; i < numCities; i++) {
+            for (int j = 0; j < i; j++) {
+                if (pheromoneMap[i][j] > max) {
+                    max = pheromoneMap[i][j];
+                }
+            }
+        }
+        return max;
     }
 }

@@ -1,9 +1,10 @@
 package ro.ulbsibiu.indinfo.ants;
 
-import static ro.ulbsibiu.indinfo.ants.Util.printArray;
+import java.util.Arrays;
 
 public class World {
 
+    private final static double initialPheromoneIntensity = 0.001;
     private final int numCities;
     private final int numAnts;
     private final Ant[] ants;
@@ -11,8 +12,9 @@ public class World {
     private final double evaporationProcent;
     private final double pheromoneIncrease;
     private final double bestPathPheromoneIncreaseFactor;
+    private int[] bestPath = null;
 
-    public World(final int numCities, final int numAnts, final double initialPheromoneIntensity, int[][] distances,
+    public World(final int numCities, final int numAnts, int[][] distances,
                  double evaporationPercent, double pheromoneIncrease, double pheromoneExponent, double visibilityExponent,
                  double bestPathPheromoneIncreaseFactor) {
         this.numCities = numCities;
@@ -37,7 +39,6 @@ public class World {
 
     public int iterate() {
         int minDistance = Integer.MAX_VALUE;
-        int[] bestPath = null;
         for (int k = 0; k < numAnts; k++) {
             ants[k].runTour();
             int pathDistance = ants[k].getPathDistance();
@@ -56,9 +57,6 @@ public class World {
         }
         for (int k = 0; k < numAnts; k++) {
             int[] path = ants[k].getPath();
-            System.out.print("ant " + k + ": ");
-            printArray(path, path.length);
-            System.out.print(" distance:" + ants[k].getPathDistance() + "\n");
             for (int i = 0; i < path.length - 1; i++) {
                 pheromoneMap[path[i]][path[i + 1]] += (pheromoneIncrease / ants[k].getPathDistance());
                 pheromoneMap[path[i + 1]][path[i]] += (pheromoneIncrease / ants[k].getPathDistance());
@@ -72,12 +70,17 @@ public class World {
         }
         //endregion
 
+        return minDistance;
+    }
+
+    public int[] getCopyOfBestPath() {
+        return Arrays.copyOf(bestPath, numCities);
+    }
+
+    public void resetAnts() {
         for (int k = 0; k < numAnts; k++) {
             ants[k].reset();
         }
-        System.out.println("Min distance: " + minDistance);
-        Util.printMatrix(pheromoneMap, numCities, numCities);
-        return minDistance;
     }
 
     public double[][] getPheromoneMap() {

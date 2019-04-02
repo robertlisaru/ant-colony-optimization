@@ -61,7 +61,16 @@ public class Ant {
             }
         }
 
-        throw new RuntimeException("The ant didn't choose any city. Maybe the probabilities don't add up to 1.0?");
+        System.out.println("The ant didn't choose any city. Maybe the probabilities don't add up to 1.0?");
+        double maxScore = Double.MIN_VALUE;
+        int maxScoreCity = -1;
+        for (int i = 0; i < numCities; i++) {
+            if (cityScores[i] > maxScore) {
+                maxScore = cityScores[i];
+                maxScoreCity = i;
+            }
+        }
+        return maxScoreCity;
     }
 
     private void walkToCity(int city) {
