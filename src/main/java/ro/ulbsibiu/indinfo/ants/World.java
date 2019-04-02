@@ -6,38 +6,32 @@ public class World {
 
     private final int numCities;
     private final int numAnts;
-    private final double initialPheromoneIntensity;
-    private final int[][] distances;
     private final Ant[] ants;
     private final double[][] pheromoneMap;
     private final double evaporationProcent;
     private final double pheromoneIncrease;
-    private final double pheromoneExponent;
-    private final double visibilityExponent;
     private final double bestPathPheromoneIncreaseFactor;
 
-    public World(final int numCities, final int numAnts, final double initialPheromoneIntensity, int[][] distances, double evaporationProcent, double pheromoneIncrease, double pheromoneExponent, double visibilityExponent, double bestPathPheromoneIncreaseFactor) {
+    public World(final int numCities, final int numAnts, final double initialPheromoneIntensity, int[][] distances,
+                 double evaporationPercent, double pheromoneIncrease, double pheromoneExponent, double visibilityExponent,
+                 double bestPathPheromoneIncreaseFactor) {
         this.numCities = numCities;
         this.numAnts = numAnts;
-        this.initialPheromoneIntensity = initialPheromoneIntensity;
-        this.distances = distances;
-        this.evaporationProcent = evaporationProcent;
+        this.evaporationProcent = evaporationPercent;
         this.pheromoneIncrease = pheromoneIncrease;
-        this.pheromoneExponent = pheromoneExponent;
-        this.visibilityExponent = visibilityExponent;
         this.bestPathPheromoneIncreaseFactor = bestPathPheromoneIncreaseFactor;
 
         pheromoneMap = new double[numCities][numCities];
-        ants = new Ant[numAnts];
-        for (int i = 0; i < numAnts; i++) {
-            ants[i] = new Ant(pheromoneMap, this.distances, numCities, pheromoneExponent, visibilityExponent);
-        }
-
         for (int i = 0; i < numCities; i++) {
             for (int j = 0; j < i; j++) {
-                pheromoneMap[i][j] = this.initialPheromoneIntensity;
-                pheromoneMap[j][i] = this.initialPheromoneIntensity;
+                pheromoneMap[i][j] = initialPheromoneIntensity;
+                pheromoneMap[j][i] = initialPheromoneIntensity;
             }
+        }
+
+        ants = new Ant[numAnts];
+        for (int i = 0; i < numAnts; i++) {
+            ants[i] = new Ant(pheromoneMap, distances, numCities, pheromoneExponent, visibilityExponent);
         }
     }
 
@@ -86,4 +80,7 @@ public class World {
         return minDistance;
     }
 
+    public double[][] getPheromoneMap() {
+        return pheromoneMap;
+    }
 }

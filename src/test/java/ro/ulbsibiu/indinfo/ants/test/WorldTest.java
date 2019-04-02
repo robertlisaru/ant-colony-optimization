@@ -18,7 +18,7 @@ public class WorldTest {
     };
     private final int numAnts = 15;
     private final double initialPheromoneIntensity = 0.001;
-    private final double evaporationProcent = 0.5;
+    private final double evaporationPercent = 0.5;
     private final double pheromoneIncrease = 100;
     private final double pheromoneExponent = 1;
     private final double visibilityExponent = 1;
@@ -27,7 +27,7 @@ public class WorldTest {
     @Test
     public void worldTest() {
         World world = new World(numCities, numAnts, initialPheromoneIntensity,
-                distances, evaporationProcent, pheromoneIncrease, pheromoneExponent,
+                distances, evaporationPercent, pheromoneIncrease, pheromoneExponent,
                 visibilityExponent, bestPathPheromoneIncreaseFactor);
 
         for (int iteration = 0; iteration < 10; iteration++) {
