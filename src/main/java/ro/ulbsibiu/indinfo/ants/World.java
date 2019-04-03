@@ -16,12 +16,12 @@ public class World {
 
     public World(final int numCities, final int numAnts, int[][] distances,
                  double evaporationPercent, double pheromoneIncrease, double pheromoneExponent, double visibilityExponent,
-                 double minPathPheromoneIncreaseFactor) {
+                 double minPathPheromoneMultiplier) {
         this.numCities = numCities;
         this.numAnts = numAnts;
         this.evaporationProcent = evaporationPercent;
         this.pheromoneIncrease = pheromoneIncrease;
-        this.minPathPheromoneIncreaseFactor = minPathPheromoneIncreaseFactor;
+        this.minPathPheromoneIncreaseFactor = minPathPheromoneMultiplier;
 
         pheromoneMap = new double[numCities][numCities];
         for (int i = 0; i < numCities; i++) {

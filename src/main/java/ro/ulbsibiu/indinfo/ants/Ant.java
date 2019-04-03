@@ -61,16 +61,16 @@ public class Ant {
             }
         }
 
-        System.out.println("The ant didn't choose any city. Maybe the probabilities don't add up to 1.0?");
-        double maxScore = Double.MIN_VALUE;
-        int maxScoreCity = -1;
+        /*System.out.println("The ant didn't choose any city. " +
+                "Maybe the probabilities don't add up to 1.0?" +
+                "Or the pheromone values are low beyond precision.");*/
         for (int i = 0; i < numCities; i++) {
-            if (cityScores[i] > maxScore) {
-                maxScore = cityScores[i];
-                maxScoreCity = i;
+            if (!isVisited[i]) {
+                return i;
             }
         }
-        return maxScoreCity;
+
+        return -1;
     }
 
     private void walkToCity(int city) {
